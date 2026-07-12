@@ -20,9 +20,11 @@ extracted_faces/*.jpg
 from ultralytics import YOLO
 import cv2
 import os
+import csv
 
 # Create folder
 os.makedirs("extracted_faces", exist_ok=True)
+os.makedirs("reports", exist_ok=True)
 
 # Load model
 model = YOLO("yolov8n.pt")
@@ -40,6 +42,10 @@ existing_files = [
 ]
 
 image_count = len(existing_files)
+
+csv_file = open("reports/timestamps.csv", "w", newline="")
+writer = csv.writer(csv_file)
+writer.writerow(["Image", "Timestamp"])
 
 while True:
     ret, frame = cap.read()
@@ -96,6 +102,13 @@ while True:
                 person_crop
             )
 
+            timestamp = frame_count / fps
+
+            writer.writerow([
+                filename,
+                f"{timestamp:.2f}"
+            ])
+
             image_count += 1
 
     cv2.imshow("ATM Person Extractor", frame)
@@ -104,6 +117,7 @@ while True:
         break
 
 cap.release()
+csv_file.close()
 cv2.destroyAllWindows()
 
 print(f"Saved {image_count} images")

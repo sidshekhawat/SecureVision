@@ -26,6 +26,12 @@ Phase 3
 ✓ Person Extraction
 ✓ Evidence Image Saving
 
+### Phase 3
+- [x] Evidence image saving
+- [x] Timestamp reporting
+- [ ] Face extraction
+- [ ] Face enhancement
+
 Future
 □ Timestamp Reporting
 □ Face Extraction
