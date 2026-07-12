@@ -1,13 +1,28 @@
 # SecureVision
 
-AI-Powered ATM Surveillance System for suspect detection, face enhancement, watchlist matching, and risk analysis.
+AI-Powered ATM Surveillance System for ATM and CCTV analysis.
+
+## Current Features
+
+### Phase 1
+- YOLOv8 video detection prototype
 
 ## Planned Features
 
-- Person Detection (YOLOv8)
-- Face Extraction (RetinaFace)
-- Face Enhancement (GFPGAN)
-- Person Enhancement (Real-ESRGAN)
-- Watchlist Matching (DeepFace)
-- Risk Scoring
-- Investigation Dashboard
+- Person extraction
+- Face extraction
+- Face enhancement
+- Watchlist matching
+- Risk scoring
+- Investigation dashboard
+
+## Dataset
+
+Place CCTV or ATM footage inside:
+
+input_videos/
+
+Example:
+
+input_videos/
+└── sample.mp4
