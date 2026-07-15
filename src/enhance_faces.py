@@ -16,9 +16,12 @@ GFPGAN
 import os
 import cv2
 from gfpgan import GFPGANer
+from pathlib import Path
 
-INPUT_FOLDER = "extracted_faces"
-OUTPUT_FOLDER = "enhanced_faces"
+ROOT = Path(__file__).resolve().parent.parent
+
+INPUT_FOLDER = ROOT / "extracted_faces"
+OUTPUT_FOLDER = ROOT / "enhanced_faces"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
@@ -34,9 +37,9 @@ for file in os.listdir(INPUT_FOLDER):
 
     if file.lower().endswith((".jpg", ".jpeg", ".png")):
 
-        img_path = os.path.join(INPUT_FOLDER, file)
+        img_path = INPUT_FOLDER / file
 
-        img = cv2.imread(img_path)
+        img = cv2.imread(str(img_path))
 
         _, _, restored = restorer.enhance(
             img,
@@ -45,9 +48,12 @@ for file in os.listdir(INPUT_FOLDER):
             paste_back=True
         )
 
-        save_path = os.path.join(OUTPUT_FOLDER, file)
+        save_path = OUTPUT_FOLDER / file
 
-        cv2.imwrite(save_path, restored)
+        cv2.imwrite(
+            str(save_path),
+            restored
+        )
 
         print(f"Enhanced: {file}")
 

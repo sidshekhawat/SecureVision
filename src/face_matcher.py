@@ -17,11 +17,18 @@ from deepface import DeepFace
 import os
 import csv
 from datetime import datetime
+from pathlib import Path
 
-KNOWN_FACES = "watchlist"
-EXTRACTED_FACES = "extracted_faces"
-csv_file="reports/timestamp.csv"
-if not os.path.exists(csv_file):
+ROOT = Path(__file__).resolve().parent.parent
+
+KNOWN_FACES = ROOT / "watchlist"
+EXTRACTED_FACES = ROOT / "extracted_faces"
+REPORTS = ROOT / "reports"
+
+csv_file = REPORTS / "timestamp.csv"
+
+REPORTS.mkdir(exist_ok=True)
+if not csv_file.exists():
     with open(csv_file, "w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow([
@@ -43,7 +50,7 @@ extracted_images = [
 
 for known in watchlist_images:
 
-    known_path = os.path.join(KNOWN_FACES, known)
+    known_path = KNOWN_FACES / known
 
     print("\n" + "=" * 50)
     print(f"Searching for matches of: {known}")
@@ -53,12 +60,12 @@ for known in watchlist_images:
 
     for face in extracted_images:
 
-        face_path = os.path.join(EXTRACTED_FACES, face)
+        face_path = EXTRACTED_FACES / face
 
         try:
             result = DeepFace.verify(
-                img1_path=known_path,
-                img2_path=face_path,
+                img1_path=str(known_path),
+                img2_path=str(face_path),
                 model_name="VGG-Face",
                 enforce_detection=False,
                 threshold=0.55
