@@ -25,6 +25,15 @@ OUTPUT_FOLDER = ROOT / "enhanced_faces"
 
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
+if not INPUT_FOLDER.exists():
+    raise FileNotFoundError(
+        f"Input folder not found: {INPUT_FOLDER}"
+    )
+
+if not any(INPUT_FOLDER.iterdir()):
+    print("No images found to enhance.")
+    exit()
+
 restorer = GFPGANer(
     model_path="https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.3.pth",
     upscale=2,
