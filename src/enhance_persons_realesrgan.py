@@ -18,6 +18,8 @@ from pathlib import Path
 from realesrgan import RealESRGANer
 from basicsr.archs.rrdbnet_arch import RRDBNet
 
+ROOT = Path(__file__).resolve().parent.parent
+
 # Model
 model = RRDBNet(
     num_in_ch=3,
@@ -28,7 +30,7 @@ model = RRDBNet(
     scale=4
 )
 
-weights_path = Path("models/RealESRGAN_x4plus.pth")
+weights_path = ROOT / "models" / "RealESRGAN_x4plus.pth"
 
 if not weights_path.exists():
     raise FileNotFoundError(
@@ -45,13 +47,16 @@ upsampler = RealESRGANer(
     half=False
 )
 
-input_dir = Path("extracted_persons")
+input_dir = ROOT / "extracted_persons"
 if not input_dir.exists():
     raise FileNotFoundError(
         f"Input directory not found: {input_dir}"
     )
-output_dir = Path("enhanced_persons")
-output_dir.mkdir(exist_ok=True)
+output_dir = ROOT / "enhanced_persons"
+output_dir.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 images = (
     list(input_dir.glob("*.jpg")) +
@@ -59,7 +64,16 @@ images = (
     list(input_dir.glob("*.png"))
 )
 
-print(f"Found {len(images)} images to enhance")
+if len(images) == 0:
+    print(
+        "No person images found to enhance."
+    )
+    exit()
+
+print(
+    f"Found {len(images)} images to enhance"
+)
+
 if len(images) == 0:
     print("No images found in extracted_persons/")
 for img_path in images:
