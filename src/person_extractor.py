@@ -14,7 +14,7 @@ Input:
 input_videos/*.mp4
 
 Output:
-extracted_faces/*.jpg
+extracted_persons/*.jpg
 """
 
 from ultralytics import YOLO
@@ -23,21 +23,21 @@ import os
 import csv
 
 # Create folder
-os.makedirs("extracted_faces", exist_ok=True)
+os.makedirs("extracted_persons", exist_ok=True)
 os.makedirs("reports", exist_ok=True)
 
 # Load model
 model = YOLO("yolov8n.pt")
 
 # Open video
-cap = cv2.VideoCapture("input_videos/1.mp4")
+cap = cv2.VideoCapture("input_videos/4.avi")
 
 fps = cap.get(cv2.CAP_PROP_FPS)
 
 frame_count = 0
 
 existing_files = [
-    f for f in os.listdir("extracted_faces")
+    f for f in os.listdir("extracted_persons")
     if f.startswith("person_") and f.endswith(".jpg")
 ]
 
