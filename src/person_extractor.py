@@ -21,29 +21,71 @@ from ultralytics import YOLO
 import cv2
 import os
 import csv
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 # Create folder
-os.makedirs("extracted_persons", exist_ok=True)
-os.makedirs("reports", exist_ok=True)
+OUTPUT_DIR = ROOT / "extracted_persons"
+REPORTS = ROOT / "reports"
+
+OUTPUT_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+REPORTS.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 # Load model
-model = YOLO("yolov8n.pt")
+MODEL_PATH = ROOT / "models" / "yolov8n.pt"
+
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(
+        f"Model not found: {MODEL_PATH}"
+    )
+
+model = YOLO(str(MODEL_PATH))
 
 # Open video
-cap = cv2.VideoCapture("input_videos/4.avi")
+VIDEO_PATH = ROOT / "input_videos" / "4.avi"
+
+if not VIDEO_PATH.exists():
+    raise FileNotFoundError(
+        f"Video not found: {VIDEO_PATH}"
+    )
+
+cap = cv2.VideoCapture(str(VIDEO_PATH))
+
+if not cap.isOpened():
+    raise RuntimeError(
+        f"Could not open video: {VIDEO_PATH}"
+    )
 
 fps = cap.get(cv2.CAP_PROP_FPS)
 
+if fps <= 0:
+    raise RuntimeError(
+        "Invalid FPS detected."
+    )
+
 frame_count = 0
 
-existing_files = [
-    f for f in os.listdir("extracted_persons")
-    if f.startswith("person_") and f.endswith(".jpg")
-]
+existing_files = list(
+    OUTPUT_DIR.glob("person_*.jpg")
+)
 
 image_count = len(existing_files)
 
-csv_file = open("reports/timestamps.csv", "w", newline="")
+csv_path = REPORTS / "timestamps.csv"
+
+csv_file = open(
+    csv_path,
+    "w",
+    newline=""
+)
 writer = csv.writer(csv_file)
 writer.writerow(["Image", "Timestamp"])
 
@@ -97,8 +139,10 @@ while True:
 
             filename = f"person_{image_count:04d}.jpg"
 
+            save_path = OUTPUT_DIR / filename
+
             cv2.imwrite(
-                f"extracted_faces/{filename}",
+                str(save_path),
                 person_crop
             )
 
