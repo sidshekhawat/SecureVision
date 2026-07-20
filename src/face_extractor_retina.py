@@ -28,31 +28,73 @@ from retinaface import RetinaFace
 import cv2
 import os
 import csv
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 # Create folders
-os.makedirs("extracted_faces", exist_ok=True)
-os.makedirs("reports", exist_ok=True)
+OUTPUT_DIR = ROOT / "extracted_faces"
+REPORTS = ROOT / "reports"
+
+OUTPUT_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+REPORTS.mkdir(
+    parents=True,
+    exist_ok=True
+)
 
 # Load YOLO model
-model = YOLO("yolov8n.pt")
+MODEL_PATH = ROOT / "models" / "yolov8n.pt"
+
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(
+        f"Model not found: {MODEL_PATH}"
+    )
+
+model = YOLO(str(MODEL_PATH))
 
 # Open video
-cap = cv2.VideoCapture("input_videos/1.mp4")
+VIDEO_PATH = ROOT / "input_videos" / "4.avi"
+
+if not VIDEO_PATH.exists():
+    raise FileNotFoundError(
+        f"Video not found: {VIDEO_PATH}"
+    )
+
+cap = cv2.VideoCapture(str(VIDEO_PATH))
+
+if not cap.isOpened():
+    raise RuntimeError(
+        f"Could not open video: {VIDEO_PATH}"
+    )
 
 fps = cap.get(cv2.CAP_PROP_FPS)
+
+if fps <= 0:
+    raise RuntimeError(
+        "Invalid FPS detected."
+    )
 
 frame_count = 0
 
 # Continue numbering from existing files
-existing_files = [
-    f for f in os.listdir("extracted_faces")
-    if f.startswith("face_") and f.endswith(".jpg")
-]
+existing_files = list(
+    OUTPUT_DIR.glob("face_*.jpg")
+)
 
 image_count = len(existing_files)
 
 # CSV report
-csv_file = open("reports/timestamps.csv", "w", newline="")
+csv_path = REPORTS / "timestamps.csv"
+
+csv_file = open(
+    csv_path,
+    "w",
+    newline=""
+)
 writer = csv.writer(csv_file)
 writer.writerow(["Image", "Timestamp"])
 
@@ -121,8 +163,10 @@ while True:
 
                         filename = f"face_{image_count:04d}.jpg"
 
+                        save_path = OUTPUT_DIR / filename
+
                         cv2.imwrite(
-                            f"extracted_faces/{filename}",
+                            str(save_path),
                             face_crop
                         )
 
@@ -135,8 +179,11 @@ while True:
 
                         image_count += 1
 
-            except Exception:
-                pass
+            except Exception as e:
+
+                print(
+                    f"Failed to process frame {frame_count}: {e}"
+                )
 
     cv2.imshow("ATM Face Extractor", frame)
 
