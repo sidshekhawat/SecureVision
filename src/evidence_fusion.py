@@ -3,6 +3,15 @@ import cv2
 from pathlib import Path
 from retinaface import RetinaFace
 
+ROOT = Path(__file__).resolve().parent.parent
+
+OUTPUT_DIR = ROOT / "outputs"
+
+OUTPUT_DIR.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
 print("Starting fusion...")
 
 def align_face(image):
@@ -54,14 +63,37 @@ def sharpness_score(image):
         gray,
         cv2.CV_64F
     ).var()
-folder = Path("extracted_faces")
+INPUT_DIR = ROOT / "extracted_faces"
+
+if not INPUT_DIR.exists():
+    raise FileNotFoundError(
+        f"Input directory not found: {INPUT_DIR}"
+    )
 
 faces = []
 scores = []
 
-for img_path in folder.glob("*.jpg"):
+images = (
+    list(INPUT_DIR.glob("*.jpg")) +
+    list(INPUT_DIR.glob("*.jpeg")) +
+    list(INPUT_DIR.glob("*.png"))
+)
+
+print(
+    f"Found {len(images)} faces"
+)
+
+if len(images) == 0:
+        raise ValueError(
+            "No face images found."
+        )
+
+for img_path in images:
 
     img = cv2.imread(str(img_path))
+
+    if img is None:
+        continue
 
     aligned = align_face(img)
 
@@ -130,11 +162,17 @@ fused = np.clip(
     255
 ).astype(np.uint8)
 
+save_path = OUTPUT_DIR / "fused_evidence.jpg"
+
 cv2.imwrite(
-    "fused_evidence.jpg",
+    str(save_path),
     fused
 )
 
 print(
-    f"Evidence fusion complete using {len(faces)} faces"
+    f"Evidence fusion complete using {len(faces)} faces."
+)
+
+print(
+    f"Saved fused image to {save_path}"
 )
