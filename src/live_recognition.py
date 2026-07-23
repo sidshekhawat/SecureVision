@@ -254,11 +254,13 @@ while True:
                  current_time = datetime.now().strftime(
                         "%d-%m-%Y %I:%M:%S %p"
                  )
-                 import os
 
                  os.makedirs("alerts", exist_ok=True)
 
-                 filename = f"alerts/{best_match}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+                 filename = (
+                    f"alerts/{best_match}_"
+                    f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
+                )
 
                  cv2.imwrite(filename, frame)
 
