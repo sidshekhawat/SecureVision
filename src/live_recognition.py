@@ -40,6 +40,11 @@ import csv
 import sqlite3
 import smtplib
 from email.message import EmailMessage
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+
+TEMP_FACE = ROOT / "temp_face.jpg"
 
 def send_email_alert(person, image_path):
     sender_email = "YOURMAIL@gmail.com"
@@ -60,12 +65,12 @@ Please check the attached evidence image.
 """
     )
 
-    with open(image_path, "rb") as f:
+    with open(str(image_path), "rb") as f:
         msg.add_attachment(
             f.read(),
             maintype="image",
             subtype="jpeg",
-            filename=image_path.split("/")[-1]
+            filename=image_path.name
         )
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
@@ -73,11 +78,20 @@ Please check the attached evidence image.
         smtp.send_message(msg)
 
 cap = cv2.VideoCapture(0)
+if not cap.isOpened():
+    raise RuntimeError(
+        "Unable to access camera."
+    )
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
 
-WATCHLIST="watchlist"
+WATCHLIST = ROOT / "watchlist"
+
+if not WATCHLIST.exists():
+    raise FileNotFoundError(
+        f"Watchlist folder not found: {WATCHLIST}"
+    )
 
 watchlist_images = [
     f for f in os.listdir(WATCHLIST)
@@ -88,7 +102,7 @@ print("Loading known faces...")
 
 for image in watchlist_images:
 
-    path = os.path.join(WATCHLIST, image)
+    path = WATCHLIST / image
 
     try:
 
@@ -105,13 +119,24 @@ for image in watchlist_images:
         print(f"Loaded: {image}")
 
     except Exception as e:
+        print(
+            f"Error loading {image}: {e}"
+        )
 
-        print(f"Error loading {image}: {e}")
 frame_count = 0
 last_name = "Unknown"
 last_confidence = 0
 logged_names = set()
-conn = sqlite3.connect("reports/securevision.db")
+REPORTS = ROOT / "reports"
+
+REPORTS.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+DATABASE = REPORTS / "securevision.db"
+
+conn = sqlite3.connect(DATABASE)
 cursor = conn.cursor()
 
 cursor.execute("""
@@ -151,8 +176,10 @@ while True:
                 if face_crop.size == 0:
                     continue
 
-                temp_face = "temp_face.jpg"
-                cv2.imwrite(temp_face, face_crop)
+                cv2.imwrite(
+                    str(TEMP_FACE),
+                    face_crop
+                )
                 if frame_count % 10 != 0:
 
                     if last_name == "Unknown":
@@ -197,7 +224,7 @@ while True:
                      try:
 
                         live_embedding = DeepFace.represent(
-                            img_path=temp_face,
+                            img_path=TEMP_FACE,
                             model_name="VGG-Face",
                             enforce_detection=False
                         )[0]["embedding"]
@@ -217,8 +244,9 @@ while True:
 
                             print(best_distance)
 
-                     except:
-                      pass
+                     except Exception as e:
+                        print(e)
+
                 confidence = max(
                     0,
                     round((1 - best_distance) * 100, 2)
@@ -255,14 +283,21 @@ while True:
                         "%d-%m-%Y %I:%M:%S %p"
                  )
 
-                 os.makedirs("alerts", exist_ok=True)
+                 ALERTS = ROOT / "alerts"
 
-                 filename = (
-                    f"alerts/{best_match}_"
+                 ALERTS.mkdir(
+                    parents=True,
+                    exist_ok=True
+                 )
+
+                 filename = ALERTS / (
+                    f"{best_match}_"
                     f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
                 )
-
-                 cv2.imwrite(filename, frame)
+                 cv2.imwrite(
+                    str(filename),
+                    frame
+                )
 
                  send_email_alert(best_match, filename)
 
@@ -317,8 +352,8 @@ while True:
                     2
                 )
 
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
     cv2.imshow(
         "ATM Face Scanner v2.0",
