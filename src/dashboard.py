@@ -17,6 +17,9 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 st.set_page_config(
     page_title="SecureVision",
@@ -26,14 +29,27 @@ st.set_page_config(
 st_autorefresh(interval=5000, key="refresh")
 st.title("🛡️ SecureVision")
 st.caption("AI-Powered ATM Surveillance System")
-conn = sqlite3.connect("reports/securevision.db")
+REPORTS = ROOT / "reports"
+
+REPORTS.mkdir(
+    parents=True,
+    exist_ok=True
+)
+
+DATABASE = REPORTS / "securevision.db"
+
+conn = sqlite3.connect(DATABASE)
 
 try:
     df = pd.read_sql_query(
         "SELECT * FROM logs ORDER BY id DESC",
         conn
     )
-except:
+except Exception as e:
+    st.warning(
+        f"Unable to load database: {e}"
+    )
+
     df = pd.DataFrame(
         columns=[
             "id",
@@ -94,12 +110,17 @@ if len(df) > 0:
     with right:
         if latest["image_path"] and latest["image_path"] != "None":
             try:
-                st.image(
-                    latest["image_path"],
-                    caption="Captured Evidence"
+                image_path = Path(latest["image_path"])
+
+                if image_path.exists():
+                    st.image(
+                        str(image_path),
+                        caption="Captured Evidence"
+                    )
+            except Exception as e:
+                st.warning(
+                    f"Unable to display image: {e}"
                 )
-            except:
-                pass
 
 st.divider()
 
