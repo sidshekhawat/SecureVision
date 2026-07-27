@@ -1,11 +1,33 @@
 from ultralytics import YOLO
 import cv2
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
 
 # Load YOLO model
-model = YOLO("yolov8s.pt")
+MODEL_PATH = ROOT / "models" / "yolov8s.pt"
+
+if not MODEL_PATH.exists():
+    raise FileNotFoundError(
+        f"Model not found: {MODEL_PATH}"
+    )
+
+model = YOLO(str(MODEL_PATH))
 
 # Open video
-cap = cv2.VideoCapture("input_videos/1.mp4")
+VIDEO_PATH = ROOT / "input_videos" / "1.mp4"
+
+if not VIDEO_PATH.exists():
+    raise FileNotFoundError(
+        f"Video not found: {VIDEO_PATH}"
+    )
+
+cap = cv2.VideoCapture(str(VIDEO_PATH))
+
+if not cap.isOpened():
+    raise RuntimeError(
+        f"Could not open video: {VIDEO_PATH}"
+    )
 
 while True:
     ret, frame = cap.read()
