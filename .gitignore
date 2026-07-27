@@ -2,7 +2,8 @@
 # Python
 # ==================================================
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
 
 # ==================================================
 # Virtual Environments
@@ -19,35 +20,56 @@ venv311/
 # IDE / Editor
 # ==================================================
 .vscode/
-
-# ==================================================
-# Model Weights
-# ==================================================
-models/
-gfpgan/
-*.pt
-*.pth
-
-# ==================================================
-# Input Data
-# ==================================================
-input_videos/
-
-# ==================================================
-# Generated Outputs
-# ==================================================
-outputs/
-extracted_faces/
-enhanced_faces/
-enhanced_persons/
-watchlist_matches/
-
-# ==================================================
-# Reports & Evidence
-# ==================================================
-reports/
+.idea/
 
 # ==================================================
 # Environment Variables
 # ==================================================
 .env
+
+# ==================================================
+# Model Weights
+# ==================================================
+models/*.pt
+models/*.pth
+gfpgan/weights/*.pth
+
+# ==================================================
+# Runtime Directories
+# ==================================================
+input_videos/**
+!input_videos/.gitkeep
+
+watchlist/**
+!watchlist/.gitkeep
+
+extracted_faces/**
+!extracted_faces/.gitkeep
+
+enhanced_faces/**
+!enhanced_faces/.gitkeep
+
+extracted_persons/**
+!extracted_persons/.gitkeep
+
+enhanced_persons/**
+!enhanced_persons/.gitkeep
+
+alerts/**
+!alerts/.gitkeep
+
+outputs/**
+!outputs/.gitkeep
+
+reports/**
+!reports/.gitkeep
+
+# ==================================================
+# Databases
+# ==================================================
+*.db
+
+# ==================================================
+# Temporary Files
+# ==================================================
+temp_face.jpg
